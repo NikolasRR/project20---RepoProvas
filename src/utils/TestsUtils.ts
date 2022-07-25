@@ -1,6 +1,6 @@
-import { DisciplineWithTests, TeacherDisciplines, TermWithDisciplines, Test } from "../services/testsServices.js";
+import { DisciplineWithTests, TeacherDisciplines, TermWithDisciplines, TestForFront } from "../services/testsServices.js";
 
-function populateTestsOfTeachersDisciplines(tests: Test[], teacherDisciplines: TeacherDisciplines[]) {
+function populateTestsOfTeachersDisciplines(tests: TestForFront[], teacherDisciplines: TeacherDisciplines[]) {
     tests.forEach(test => {
         teacherDisciplines.forEach(teacherDiscipline => {
             if (teacherDiscipline.tests === undefined) teacherDiscipline.tests = [];

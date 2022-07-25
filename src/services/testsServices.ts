@@ -1,9 +1,9 @@
-import { Category, Discipline, Teacher, Term } from "@prisma/client";
+import { Category, Discipline, Teacher, Term, Test } from "@prisma/client";
 
 import testsRepository from "../repositories/testsRepository.js";
 import testsUtils from "../utils/TestsUtils.js";
 
-export type Test = {
+export type TestForFront = {
     id: number,
     name: string,
     pdfUrl: string,
@@ -16,7 +16,7 @@ export type TeacherDisciplines = {
     id: number,
     teacher?: Teacher,
     discipline: Omit<Discipline, "term_id">
-    tests?: Test[]
+    tests?: TestForFront[]
 }
 
 export type DisciplineWithTests = {
@@ -30,10 +30,19 @@ export type TermWithDisciplines = Term & {
     disciplines?: DisciplineWithTests[],
 }
 
+export type NewTest = {
+    name: string,
+    link: string,
+    teacher_id: number,
+    discipline_id: number,
+    category_id: number,
+    author_id?: number
+}
+
 async function getByDisciplines() {
     let terms: TermWithDisciplines[] = await testsRepository.getTerms();
     let disciplines: DisciplineWithTests[] = await testsRepository.getDisciplines();
-    let tests: Test[] = await testsRepository.getTests();
+    let tests: TestForFront[] = await testsRepository.getTests();
     let teacherDisciplines: TeacherDisciplines[] = await testsRepository.getTeachersDisciplines();
 
     teacherDisciplines = testsUtils.populateTestsOfTeachersDisciplines(tests, teacherDisciplines);
@@ -46,7 +55,7 @@ async function getByDisciplines() {
 }
 
 async function getByInstructor() {
-    let tests: Test[] = await testsRepository.getTests();
+    let tests: TestForFront[] = await testsRepository.getTests();
     let teacherDisciplines: TeacherDisciplines[] = await testsRepository.getTeachersDisciplines();
 
     teacherDisciplines = testsUtils.populateTestsOfTeachersDisciplines(tests, teacherDisciplines);
@@ -54,9 +63,27 @@ async function getByInstructor() {
     return { tests: teacherDisciplines };
 }
 
+async function addNewTest(testInfo: Test) {
+    const link = await testsRepository.getTestByLink(testInfo.link);
+    if (link) throw {type: "conflict", details: "test link"};
+
+    const category = await testsRepository.getCategoryById(testInfo.category_id);
+    if (!category) throw {type: "not found", details: "category"};
+
+    const discipline = await testsRepository.getDisciplineById(testInfo.discipline_id);
+    if (!discipline) throw {type: "not found", details: "discipline"};
+
+    const teacher = await testsRepository.getTeacherById(testInfo.teacher_id);
+    if (!teacher) throw {type: "not found", details: "teacher"};
+
+
+    await testsRepository.addNewTest(testInfo);
+}
+
 const testsServices = {
     getByDisciplines,
-    getByInstructor
+    getByInstructor,
+    addNewTest
 };
 
 export default testsServices;

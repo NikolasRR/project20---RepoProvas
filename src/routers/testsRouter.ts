@@ -6,6 +6,7 @@ import tokenValidator from "../middlewares/tokenValidator.js";
 
 const testRouter = Router();
 
-testRouter.get('/tests', tokenValidator, M.verifyGroupByQuery, C.getTestsByDiscipline);
+testRouter.get('/tests', tokenValidator, M.verifyGroupByQuery, C.getTests);
+testRouter.post('/tests', tokenValidator, M.verifyNewTestInfo, C.addTest);
 
 export default testRouter;
